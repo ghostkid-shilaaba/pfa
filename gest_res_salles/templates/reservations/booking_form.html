@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Réserver une salle{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-green text-white py-3">
+                    <h4 class="mb-0 text-center"><i class="bi bi-calendar-check"></i> Nouvelle Réservation</h4>
+                    <p class="small mb-0 text-center text-white-50">{{ room.name }}</p>
+                </div>
+                
+                <div class="card-body p-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-dark">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ field.errors|striptags }}
+                                    </div>
+                                {% endif %}
+                                {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <hr class="my-4">
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-green btn-lg fw-bold">
+                                Envoyer la demande
+                            </button>
+                            <a href="{% url 'rooms:room_list' %}" class="btn btn-outline-secondary">
+                                Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer bg-light p-3">
+                    <div class="d-flex align-items-center text-muted small">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <span>Horaires autorisés : <strong>08:30 — 18:15</strong>. Fermé le dimanche.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Rappel de tes couleurs pour le bouton et le header */
+    .bg-green { background-color: #28a745 !important; }
+    .btn-green { 
+        background-color: #28a745; 
+        color: white; 
+        border: none;
+    }
+    .btn-green:hover { 
+        background-color: #218838; 
+        color: white;
+    }
+    .text-green { color: #28a745; }
+</style>
+{% endblock %}

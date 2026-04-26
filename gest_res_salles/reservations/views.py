@@ -1,39 +1,102 @@
-# reservations/views.py
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db.models import Q
+from datetime import time
 from .models import Reservation
-from salles.models import Salle # Vérifie si ton modèle s'appelle Salle ou Room
+from .forms import ReservationForm
+from salles.models import Salle
 
 @login_required
 def make_reservation(request, room_id):
-    # 1. Sécurité : Bloquer les étudiants
+    # 1. Sécurité Rôle
     if request.user.role == 'ETUDIANT':
-        return HttpResponseForbidden("Vous n'avez pas les droits pour réserver une salle.")
+        return HttpResponseForbidden("Les étudiants ne peuvent pas réserver.")
 
-    # 2. Récupérer la salle (pour l'afficher dans le formulaire)
     room = get_object_or_404(Salle, pk=room_id)
 
-    # 3. TRAITEMENT DU FORMULAIRE (POST)
     if request.method == "POST":
-        reservation = Reservation(
-            user=request.user,
-            room_id=room_id,
-            date=request.POST.get('date'),
-            start_time=request.POST.get('start_time'),
-            end_time=request.POST.get('end_time'),
-            purpose=request.POST.get('purpose')
-        )
+        form = ReservationForm(request.POST)
+        if form.is_valid():
+            # On crée l'objet sans le sauver en BDD pour faire nos checks
+            res = form.save(commit=False)
+            res.user = request.user
+            res.room = room
 
-        # Logique de pouvoir
-        if request.user.role == 'ADMIN' or request.user.is_superuser:
-            reservation.status = 'APPROVED'
-        else:
-            reservation.status = 'PENDING'
+            # --- VALIDATIONS MÉTIER ---
+            
+            # A. Pas le Dimanche (6 = Sunday)
+            if res.date.weekday() == 6:
+                messages.error(request, "Impossible de réserver le dimanche.")
+                return render(request, 'reservations/booking_form.html', {'form': form, 'room': room})
 
+            # B. Limites horaires (08:30 - 18:15)
+            if res.start_time < time(8, 30) or res.end_time > time(18, 15):
+                messages.error(request, "Les réservations doivent être entre 08:30 et 18:15.")
+                return render(request, 'reservations/booking_form.html', {'form': form, 'room': room})
+
+            # C. Cohérence des heures
+            if res.start_time >= res.end_time:
+                messages.error(request, "L'heure de fin doit être après le début.")
+                return render(request, 'reservations/booking_form.html', {'form': form, 'room': room})
+
+            # --- GESTION DES CONFLITS ---
+            conflicts = Reservation.objects.filter(
+                room=room,
+                date=res.date,
+                status='APPROVED'
+            ).filter(
+                Q(start_time__lt=res.end_time, end_time__gt=res.start_time)
+            )
+
+            if conflicts.exists():
+                messages.error(request, "Cette salle est déjà occupée sur ce créneau.")
+                return render(request, 'reservations/booking_form.html', {'form': form, 'room': room})
+
+            # --- LOGIQUE DE STATUT ---
+            if request.user.role == 'ADMIN' or request.user.is_superuser:
+                res.status = 'APPROVED'
+                messages.success(request, "Réservation validée directement !")
+            else:
+                res.status = 'PENDING'
+                messages.info(request, "Demande envoyée, en attente de validation.")
+
+            res.save()
+            return redirect('rooms:room_list')
+    else:
+        # Cas GET : Formulaire vide
+        form = ReservationForm()
+
+    return render(request, 'reservations/booking_form.html', {'form': form, 'room': room})
+
+# Ajoute ceci à la fin de reservations/views.py
+
+@login_required
+def admin_dashboard(request):
+    # Vérification de sécurité pour que seuls les admins y accèdent
+    if request.user.role != 'ADMIN' and not request.user.is_superuser:
+        return HttpResponseForbidden("Accès réservé à l'administration.")
+    
+    # On récupère toutes les réservations en attente (PENDING)
+    pending_requests = Reservation.objects.filter(status='PENDING').order_by('date')
+    
+    return render(request, 'reservations/admin_dashboard.html', {
+        'requests': pending_requests
+    })
+
+@login_required
+def update_status(request, res_id, new_status):
+    # Vérification de sécurité
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        reservation = get_object_or_404(Reservation, pk=res_id)
+        
+        # On met à jour le statut (APPROVED ou REJECTED)
+        reservation.status = new_status
         reservation.save()
-        return redirect('rooms:room_list')
-
-    # 4. AFFICHAGE DU FORMULAIRE (GET)
-    # Si ce n'est pas un POST, on renvoie le template HTML
-    return render(request, 'reservations/booking_form.html', {'room': room})
+        
+        messages.success(request, f"La demande de {reservation.user.username} a été {new_status.lower()}.")
+    else:
+        return HttpResponseForbidden()
+        
+    return redirect('reservations:admin_dashboard')
