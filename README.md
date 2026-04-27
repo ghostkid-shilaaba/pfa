@@ -5,6 +5,7 @@ git clone https://github.com/ghostkid-shilaaba/pfa
 venv/scripts/activate
 cd pfa
 pip install -r requirements.txt
+--
 2nd time
 venv/scripts/activate
 git pull origin main
