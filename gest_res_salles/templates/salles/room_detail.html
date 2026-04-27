@@ -32,6 +32,14 @@
                 </li>
             </ul>
         </div>
+        <div class="alert alert-info">
+    <h5><i class="bi bi-info-circle"></i> État d'occupation :</h5>
+    {% for occ in occupations %}
+        <p class="mb-1">🔴 Occupée le <strong>{{ occ.date }}</strong> de {{ occ.start_time }} à {{ occ.end_time }}</p>
+    {% empty %}
+        <p class="mb-0 text-success">🟢 Aucune occupation prévue. Libre pour réservation.</p>
+    {% endfor %}
+</div>
     </div>
     
     <div class="col-md-4">

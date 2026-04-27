@@ -8,6 +8,7 @@ from .models import Reservation
 from .forms import ReservationForm
 from salles.models import Salle
 
+
 @login_required
 def make_reservation(request, room_id):
     # 1. Sécurité Rôle
@@ -94,9 +95,20 @@ def update_status(request, res_id, new_status):
         # On met à jour le statut (APPROVED ou REJECTED)
         reservation.status = new_status
         reservation.save()
-        
-        messages.success(request, f"La demande de {reservation.user.username} a été {new_status.lower()}.")
+        statut = "approuvée" if new_status == 'APPROVED' else "refusée"
+        messages.success(request, f"La demande de {reservation.user.username} a été {statut}.")
     else:
         return HttpResponseForbidden()
         
     return redirect('reservations:admin_dashboard')
+
+@login_required
+def my_reservations(request):
+    # Un prof voit ses réservations, un admin voit tout
+    if request.user.role == 'ADMIN' or request.user.is_superuser:
+        user_reservations = Reservation.objects.all().order_by('-date')
+    else:
+        user_reservations = Reservation.objects.filter(user=request.user).order_by('-date')
+    
+    return render(request, 'reservations/my_reservations.html', {'reservations': user_reservations})
+    

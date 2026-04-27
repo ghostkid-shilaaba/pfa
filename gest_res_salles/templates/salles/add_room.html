@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-green text-white">
+                <h4 class="mb-0">Ajouter une nouvelle salle</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Nom de la salle</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Type de salle</label>
+                            {{ form.salle_type }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Capacité (places)</label>
+                        {{ form.capacity }}
+                    </div>
+
+                    <div class="row mb-3 px-3">
+                        <div class="col-4 form-check form-switch">
+                            {{ form.is_active }}
+                            <label class="form-check-label">Disponible</label>
+                        </div>
+                        <div class="col-4 form-check form-switch">
+                            {{ form.has_projector }}
+                            <label class="form-check-label">Projecteur</label>
+                        </div>
+                        <div class="col-4 form-check form-switch">
+                            {{ form.has_ac }}
+                            <label class="form-check-label">Climatisation</label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-green px-4">Enregistrer</button>
+                        <a href="{% url 'rooms:room_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

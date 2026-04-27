@@ -11,3 +11,4 @@ class ReservationForm(forms.ModelForm):
             'end_time': forms.TimeInput(attrs={'type': 'time', 'class': 'form-control', 'min': '08:30', 'max': '18:15'}),
             'purpose': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: TP Réseaux'}),
         }
+

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-green fw-bold mb-4">Mes Réservations</h2>
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th>Salle</th>
+                        <th>Date</th>
+                        <th>Horaires</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in reservations %}
+                    <tr>
+                        <td><strong>{{ res.room.name }}</strong></td>
+                        <td>{{ res.date|date:"d/m/Y" }}</td>
+                        <td>{{ res.start_time }} - {{ res.end_time }}</td>
+                        <td>
+                            {% if res.status == 'APPROVED' %}
+                                <span class="badge bg-success">Approuvée</span>
+                            {% elif res.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-danger">Refusée</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Importer des Salles{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-green text-white py-3">
+                <h4 class="mb-0"><i class="bi bi-file-earmark-spreadsheet"></i> Importation massive de salles</h4>
+            </div>
+            <div class="card-body p-4">
+                <p class="text-muted">Sélectionnez un fichier CSV pour ajouter plusieurs salles d'un coup.</p>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="csv_file" class="form-label fw-bold">Fichier CSV</label>
+                        <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
+                    </div>
+
+                    <div class="alert alert-light border small">
+                        <h6 class="fw-bold"><i class="bi bi-info-circle"></i> Format attendu :</h6>
+                        <p class="mb-1">Utilisez le point-virgule (<strong>;</strong>) comme séparateur.</p>
+                        <code>nom;capacite;salle_type</code><br>
+                        <span class="text-muted">Exemple : B102;30;TD</span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-green fw-bold">Lancer l'importation</button>
+                        <a href="{% url 'rooms:room_list' %}" class="btn btn-outline-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
