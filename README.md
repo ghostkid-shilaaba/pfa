@@ -9,7 +9,7 @@ pip install -r requirements.txt
 venv/scripts/activate
 git pull origin main
 cd pfa
-----------------------------------
+--
 git checkout -b "smia"
 git add .
 git commit -m "message"
