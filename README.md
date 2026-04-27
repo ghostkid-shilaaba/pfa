@@ -1,4 +1,5 @@
 1st time
+--
 python -m venv venv  
 git clone https://github.com/ghostkid-shilaaba/pfa  
 venv/scripts/activate
