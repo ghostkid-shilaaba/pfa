@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-green text-white">
+            <h4 class="mb-0">Détails de la Réservation</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Salle :</strong> {{ reservation.room.name }}</p>
+                    <p><strong>Utilisateur :</strong> {{ reservation.user.username }} ({{ reservation.user.email }})</p>
+                    <p><strong>Date :</strong> {{ reservation.date }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Début :</strong> {{ reservation.start_time }}</p>
+                    <p><strong>Fin :</strong> {{ reservation.end_time }}</p>
+                    <p><strong>Statut :</strong> 
+                        <td>
+                            {% if reservation.status == 'APPROVED' %}
+                                <span class="badge bg-success">Approuvée</span>
+                            {% elif reservation.status == 'PENDING' %}
+                                <span class="badge bg-warning text-dark">En attente</span>
+                            {% else %}
+                                <span class="badge bg-danger">Refusée</span>
+                            {% endif %}
+                        </td>
+                    </p>
+                </div>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'reservations:my_reservations' %}" class="btn btn-secondary">Retour</a>
+                {% if user.role == 'ADMIN' and reservation.status == 'PENDING' %}
+                <div>
+                    <a href="{% url 'reservations:update_status' reservation.id 'APPROVED' %}" class="btn btn-success">Approuver</a>
+                    <a href="{% url 'reservations:update_status' reservation.id 'REJECTED' %}" class="btn btn-danger">Refuser</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

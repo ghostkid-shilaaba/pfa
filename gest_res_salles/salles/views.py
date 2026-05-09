@@ -1,17 +1,64 @@
 import io  
 import csv
-from datetime import date
+from datetime import date,datetime, time
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from .models import Salle
 from .forms import SalleForm
+from reservations.models import Reservation
+from django.db.models import Q
 
 def room_list(request):
-    # On récupère toutes les salles actives
-    rooms = Salle.objects.filter(is_active=True)
-    return render(request, 'salles/room_list.html', {'rooms': rooms})
+    # On commence avec toutes les salles actives
+    salles = Salle.objects.filter(is_active=True)
+
+    # --- FILTRES TEXTE ET CHOIX ---
+    query = request.GET.get('q')
+    if query:
+        salles = salles.filter(name__icontains=query)
+
+    salle_type = request.GET.get('type')
+    if salle_type:
+        salles = salles.filter(salle_type=salle_type)
+
+    capacity_min = request.GET.get('capacity_min')
+    if capacity_min:
+        salles = salles.filter(capacity__gte=capacity_min)
+
+    # --- FILTRES ÉQUIPEMENTS (Checkboxes) ---
+    if request.GET.get('has_projector'):
+        salles = salles.filter(has_projector=True)
+    
+    if request.GET.get('has_ac'):
+        salles = salles.filter(has_ac=True)
+
+    # --- FILTRE DE DISPONIBILITÉ (Le cerveau du système) ---
+    date_query = request.GET.get('date')
+    start_query = request.GET.get('start_time')
+    end_query = request.GET.get('end_time')
+
+    if date_query and start_query and end_query:
+        try:
+            # On identifie les salles déjà réservées (APPROVED) sur ce créneau
+            occupied_rooms = Reservation.objects.filter(
+                date=date_query,
+                status='APPROVED'
+            ).filter(
+                Q(start_time__lt=end_query, end_time__gt=start_query)
+            ).values_list('room_id', flat=True)
+
+            # On exclut ces salles de la liste finale
+            salles = salles.exclude(id__in=occupied_rooms)
+        except ValueError:
+            pass # Gestion d'erreur si format heure invalide
+
+    context = {
+        'salles': salles,
+        'room_types': Salle.ROOM_TYPES,
+    }
+    return render(request, 'salles/room_list.html', context)
 
 # Dans salles/views.py
 def room_detail(request, pk):
@@ -39,7 +86,6 @@ def add_room(request):
 
 @login_required
 def import_rooms_csv(request):
-    """Vue pour l'importation massive de salles via un fichier CSV"""
     if request.user.role != 'ADMIN' and not request.user.is_superuser:
         return HttpResponseForbidden()
 
@@ -49,20 +95,34 @@ def import_rooms_csv(request):
         try:
             decoded_file = csv_file.read().decode('utf-8')
             io_string = io.StringIO(decoded_file)
-            reader = csv.reader(io_string, delimiter=';')
-            next(reader)  # Sauter l'en-tête (Nom;Capacité;Type)
+            # Utiliser DictReader est plus propre quand on a beaucoup de colonnes
+            reader = csv.DictReader(io_string, delimiter=';')
 
             count = 0
             for row in reader:
-                # row[0]=nom, row[1]=capacité, row[2]=type
-                Salle.objects.get_or_create(
-                    name=row[0],
-                    capacity=int(row[1]),
-                    salle_type=row[2]
+                # On nettoie et on convertit les données
+                # .get('Nom') doit correspondre exactement à l'en-tête de ton CSV
+                salle_nom = row.get('Nom')
+                if not salle_nom: continue # Saute les lignes vides
+
+                # Logique pour transformer "1" ou "True" en Boolean Django
+                def to_bool(val):
+                    return str(val).lower() in ['1', 'true', 'oui', 'yes']
+
+                Salle.objects.update_or_create(
+                    name=salle_nom,
+                    defaults={
+                        'capacity': int(row.get('Capacité', 0)),
+                        'salle_type': row.get('Type', 'TD'),
+                        'has_projector': to_bool(row.get('Projecteur', False)),
+                        'has_ac': to_bool(row.get('Climatisation', False)),
+                        'description': row.get('Description', ''),
+                        'is_active': True
+                    }
                 )
                 count += 1
             
-            messages.success(request, f"{count} salles ont été importées avec succès.")
+            messages.success(request, f"{count} salles ont été traitées (ajoutées ou mises à jour).")
         except Exception as e:
             messages.error(request, f"Erreur lors de l'importation : {e}")
             

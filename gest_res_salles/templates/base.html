@@ -15,7 +15,6 @@
         .btn-green:hover { background-color: #146c43; color: white; }
         .nav-link:hover { color: #d1e7dd !important; }
         
-        /* Style simple pour le menu latéral */
         .offcanvas { width: 280px !important; }
         .sidebar-link { padding: 12px 20px; display: block; color: #333; text-decoration: none; border-bottom: 1px solid #eee; }
         .sidebar-link:hover { background-color: var(--light-green); color: var(--main-green); }
@@ -58,7 +57,7 @@
                     {% endif %}
 
                     {% if user.role == 'ADMIN' %}
-                    <div class="bg-light px-3 py-2 small fw-bold text-muted border-bottom">ADMINISTRATION</div>
+                    <div class="bg-light px-3 py-2 small fw-bold text-muted border-bottom">ADMINISTRATION SALLES</div>
                     <a href="{% url 'reservations:admin_dashboard' %}" class="sidebar-link text-success">
                         <i class="bi bi-shield-check me-2"></i> Gérer les Demandes
                     </a>
@@ -67,6 +66,14 @@
                     </a>
                     <a href="{% url 'rooms:import_csv' %}" class="sidebar-link">
                         <i class="bi bi-file-earmark-spreadsheet me-2"></i> Importer Salles (CSV)
+                    </a>
+
+                    <div class="bg-light px-3 py-2 small fw-bold text-muted border-bottom border-top">ADMINISTRATION UTILISATEURS</div>
+                    <a href="{% url 'user_list' %}" class="sidebar-link">
+                        <i class="bi bi-people me-2"></i> Liste des Comptes
+                    </a>
+                    <a href="{% url 'import_users' %}" class="sidebar-link">
+                        <i class="bi bi-person-plus me-2"></i> Importer Utilisateurs (CSV)
                     </a>
                     {% endif %}
 
@@ -105,6 +112,5 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/style-forms.js' %}"></script>
 </body>
 </html>

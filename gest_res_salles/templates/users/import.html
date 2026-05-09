@@ -1,23 +1,53 @@
 {% extends "base.html" %}
 
+{% block title %}Importation Utilisateurs{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h3>Importer des Utilisateurs (CSV)</h3>
-        </div>
-        <div class="card-body">
-            <p>Le fichier CSV doit contenir les colonnes : <strong>email, username, role, telephone, matricule</strong>.</p>
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-0">
+            <!-- Header Vert (bg-green) pour correspondre aux Salles -->
+            <div class="card-header bg-green text-white fw-bold py-3">
+                <i class="bi bi-person-plus-fill me-2"></i> Importer des Utilisateurs (CSV)
+            </div>
             
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label for="csv_file" class="form-label">Sélectionner le fichier CSV</label>
-                    <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
+            <div class="card-body p-4">
+                <!-- Section des pré-requis (esthétique identique aux salles) -->
+                <div class="alert alert-info border-0 shadow-sm mb-4">
+                    <h6 class="fw-bold"><i class="bi bi-info-circle-fill"></i> Pré-requis du fichier :</h6>
+                    <ul class="small mb-0">
+                        <li><strong>Format :</strong> Fichier CSV (séparateur point-virgule <code>;</code>)</li>
+                        <li><strong>Colonnes requises :</strong> <code>email;username;role;telephone;matricule;password</code></li>
+                        <li><strong>Rôles valides :</strong> <code>ENSEIGNANT</code> ou <code>ETUDIANT</code></li>
+                        <li><strong>Mot de passe :</strong> Si vide, <code>Pass12345</code> sera utilisé par défaut.</li>
+                    </ul>
                 </div>
-                <button type="submit" class="btn btn-success">Lancer l'importation</button>
-                <a href="{% url 'user_list' %}" class="btn btn-secondary">Annuler</a>
-            </form>
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="csv_file" class="form-label fw-bold">Sélectionner le fichier CSV</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-filetype-csv"></i></span>
+                            <input type="file" name="csv_file" id="csv_file" class="form-control border-success" accept=".csv" required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-green">
+                            <i class="bi bi-cloud-arrow-up-fill me-1"></i> Lancer l'importation
+                        </button>
+                        <a href="{% url 'user_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Petit rappel du format visuel en dessous -->
+        <div class="mt-4 text-center">
+            <p class="text-muted small">Exemple : <code>nom@univ.ma;Jean Dupont;ENSEIGNANT;060000;M123;Pass123</code></p>
         </div>
     </div>
 </div>

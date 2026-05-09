@@ -20,12 +20,13 @@
                         <input type="file" name="csv_file" id="csv_file" class="form-control" accept=".csv" required>
                     </div>
 
-                    <div class="alert alert-light border small">
-                        <h6 class="fw-bold"><i class="bi bi-info-circle"></i> Format attendu :</h6>
-                        <p class="mb-1">Utilisez le point-virgule (<strong>;</strong>) comme séparateur.</p>
-                        <code>nom;capacite;salle_type</code><br>
-                        <span class="text-muted">Exemple : B102;30;TD</span>
-                    </div>
+                    <div class="alert alert-info">
+    <small>
+        <strong>Format requis :</strong> Nom;Capacité;Type;Projecteur;Climatisation<br>
+        <strong>Types :</strong> AMPHI, LABO, TD<br>
+        <strong>Projecteur/Clim :</strong> 1 pour Oui, 0 pour Non
+    </small>
+</div>
 
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-green fw-bold">Lancer l'importation</button>

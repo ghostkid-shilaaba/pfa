@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5 text-center">
+    <div class="card p-5 border-0 shadow-sm mx-auto" style="max-width: 500px;">
+        <h2 class="text-danger mb-4">Annuler la réservation ?</h2>
+        <p>Voulez-vous vraiment supprimer la réservation pour <strong>{{ reservation.room.nom }}</strong> le {{ reservation.date }} ?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'reservations:my_reservations' %}" class="btn btn-secondary">Non, garder</a>
+                <button type="submit" class="btn btn-danger">Oui, annuler définitivement</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

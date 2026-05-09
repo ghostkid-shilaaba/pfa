@@ -11,6 +11,7 @@
                         <th>Date</th>
                         <th>Horaires</th>
                         <th>Statut</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -28,6 +29,26 @@
                                 <span class="badge bg-danger">Refusée</span>
                             {% endif %}
                         </td>
+                        <td class="text-center">
+                            <!-- Bouton Détails -->
+                            <a href="{% url 'reservations:reservation_details' res.pk %}" class="btn btn-sm btn-outline-info me-1" title="Voir les détails">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <!-- Bouton Modifier -->
+                            <a href="{% url 'reservations:edit_reservation' res.pk %}" class="btn btn-sm btn-outline-primary me-1" title="Modifier">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+
+                            <!-- Bouton Annuler (Ouvre la page de confirmation) -->
+                            <a href="{% url 'reservations:cancel_reservation' res.pk %}" class="btn btn-sm btn-outline-danger" title="Annuler">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">Aucune réservation trouvée.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
